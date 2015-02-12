@@ -122,7 +122,7 @@ class User(KayakoObject):
                 setattr(self, date_node, self._get_date(node))
 
     @classmethod
-    def get_all(cls, api, marker=0, maxitems=1000):
+    def get_all(cls, api, marker=0, maxitems=10000):
         '''
         Returns the users starting at User ID ``marker`` pulling in a maximum
         ``maxitems`` number of Users.
