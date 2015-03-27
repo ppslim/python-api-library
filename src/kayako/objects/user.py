@@ -127,9 +127,21 @@ class User(KayakoObject):
         Returns the users starting at User ID ``marker`` pulling in a maximum
         ``maxitems`` number of Users.
         '''
-        response = api._request('%s/Filter/%s/%s/' % (cls.controller, marker, maxitems), 'GET')
-        tree = etree.parse(response)
-        return [User(api, **cls._parse_user(user_tree)) for user_tree in tree.findall('user')]
+        chunkSize = 1000 if maxitems > 1000 else maxitems
+        retval = []
+        while len(retval) < maxitems:
+            response = api._request('%s/Filter/%s/%s/' % (cls.controller, marker, chunkSize), 'GET')
+            tree = etree.parse(response)
+            itertree = tree.findall('user')
+            for user_tree in itertree:
+                tmpuser = User(api, **cls._parse_user(user_tree))
+                retval.append(tmpuser)
+                marker = tmpuser.id
+                if len(retval) == maxitems:
+                    break
+            if len(itertree) < chunkSize:
+                break
+        return retval
 
     @classmethod
     def get(cls, api, id):
